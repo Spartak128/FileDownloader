@@ -22,6 +22,7 @@ import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
+import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Environment;
 import android.os.StatFs;
@@ -522,14 +523,21 @@ public class FileDownloadUtils {
             return true;
         }
 
-        //noinspection MissingPermission, because we check permission accessible when invoked
-        final Network activeNetwork = manager.getActiveNetwork();
-        if (activeNetwork == null) {
-            return true;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            //noinspection MissingPermission, because we check permission accessible when invoked
+            final Network activeNetwork = manager.getActiveNetwork();
+            if (activeNetwork == null) {
+                return true;
+            }
+
+            final NetworkCapabilities capabilities = manager.getNetworkCapabilities(activeNetwork);
+            return capabilities == null
+                    || !capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI);
         }
 
-        final NetworkCapabilities capabilities = manager.getNetworkCapabilities(activeNetwork);
-        return capabilities == null || !capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI);
+        //noinspection MissingPermission, because we check permission accessible when invoked
+        final NetworkInfo info = manager.getActiveNetworkInfo();
+        return info == null || info.getType() != ConnectivityManager.TYPE_WIFI;
     }
 
     public static boolean checkPermission(String permission) {
