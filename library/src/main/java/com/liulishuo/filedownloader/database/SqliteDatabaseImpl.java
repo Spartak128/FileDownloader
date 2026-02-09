@@ -155,12 +155,10 @@ public class SqliteDatabaseImpl implements FileDownloadDatabase {
             return;
         }
 
-        if (find(downloadModel.getId()) != null) {
-            // db
-            ContentValues cv = downloadModel.toContentValues();
-            db.update(TABLE_NAME, cv, FileDownloadModel.ID + " = ? ",
-                    new String[]{String.valueOf(downloadModel.getId())});
-        } else {
+        final ContentValues cv = downloadModel.toContentValues();
+        final int updateCount = db.update(TABLE_NAME, cv, FileDownloadModel.ID + " = ? ",
+                new String[]{String.valueOf(downloadModel.getId())});
+        if (updateCount <= 0) {
             insert(downloadModel);
         }
     }
