@@ -240,7 +240,8 @@ public class FileDownloadProperties {
 
         //download.min-progress-step
         if (downloadMinProgressStep != null) {
-            int processDownloadMinProgressStep = Integer.valueOf(downloadMinProgressStep);
+            int processDownloadMinProgressStep = parseIntWithDefault(downloadMinProgressStep, 65536,
+                    KEY_DOWNLOAD_MIN_PROGRESS_STEP);
             processDownloadMinProgressStep = Math.max(0, processDownloadMinProgressStep);
             this.downloadMinProgressStep = processDownloadMinProgressStep;
         } else {
@@ -249,7 +250,8 @@ public class FileDownloadProperties {
 
         //download.min-progress-time
         if (downloadMinProgressTime != null) {
-            long processDownloadMinProgressTime = Long.valueOf(downloadMinProgressTime);
+            long processDownloadMinProgressTime = parseLongWithDefault(downloadMinProgressTime, 2000L,
+                    KEY_DOWNLOAD_MIN_PROGRESS_TIME);
             processDownloadMinProgressTime = Math.max(0, processDownloadMinProgressTime);
             this.downloadMinProgressTime = processDownloadMinProgressTime;
         } else {
@@ -259,7 +261,8 @@ public class FileDownloadProperties {
         //download.max-network-thread-count
         if (downloadMaxNetworkThreadCount != null) {
             this.downloadMaxNetworkThreadCount = getValidNetworkThreadCount(
-                    Integer.valueOf(downloadMaxNetworkThreadCount));
+                    parseIntWithDefault(downloadMaxNetworkThreadCount, 3,
+                            KEY_DOWNLOAD_MAX_NETWORK_THREAD_COUNT));
         } else {
             this.downloadMaxNetworkThreadCount = 3;
         }
@@ -316,6 +319,26 @@ public class FileDownloadProperties {
                     KEY_FILE_NON_PRE_ALLOCATION, this.fileNonPreAllocation,
                     KEY_BROADCAST_COMPLETED, this.broadcastCompleted,
                     KEY_TRIAL_CONNECTION_HEAD_METHOD, this.trialConnectionHeadMethod);
+        }
+    }
+
+    private int parseIntWithDefault(String value, int defaultValue, String key) {
+        try {
+            return Integer.parseInt(value);
+        } catch (NumberFormatException e) {
+            FileDownloadLog.w(this, "'%s' with invalid value[%s], use default %d", key,
+                    value, defaultValue);
+            return defaultValue;
+        }
+    }
+
+    private long parseLongWithDefault(String value, long defaultValue, String key) {
+        try {
+            return Long.parseLong(value);
+        } catch (NumberFormatException e) {
+            FileDownloadLog.w(this, "'%s' with invalid value[%s], use default %d", key,
+                    value, defaultValue);
+            return defaultValue;
         }
     }
 

@@ -36,7 +36,7 @@ import static com.liulishuo.filedownloader.model.FileDownloadModel.TOTAL_VALUE_I
  */
 public class FetchDataTask {
 
-    static final int BUFFER_SIZE = 1024 * 4;
+    static final int BUFFER_SIZE = 1024 * 32;
     private final ProcessCallback callback;
 
     private final int downloadId;

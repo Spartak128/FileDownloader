@@ -120,9 +120,24 @@ public class FileDownloadUrlConnection implements FileDownloadConnection {
 
     @Override
     public void ending() {
+        if (mConnection instanceof HttpURLConnection) {
+            final HttpURLConnection httpURLConnection = (HttpURLConnection) mConnection;
+            InputStream errorStream = httpURLConnection.getErrorStream();
+            if (errorStream != null) {
+                try {
+                    errorStream.close();
+                } catch (IOException ignored) {
+                }
+            }
+        }
+
         try {
             mConnection.getInputStream().close();
         } catch (IOException ignored) {
+        }
+
+        if (mConnection instanceof HttpURLConnection) {
+            ((HttpURLConnection) mConnection).disconnect();
         }
     }
 
