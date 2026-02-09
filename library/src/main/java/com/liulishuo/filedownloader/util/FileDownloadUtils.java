@@ -20,10 +20,10 @@ import android.app.ActivityManager;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
+import android.net.Network;
+import android.net.NetworkCapabilities;
 import android.os.Build;
 import android.os.Environment;
-import android.os.PowerManager;
 import android.os.StatFs;
 import android.text.TextUtils;
 
@@ -515,18 +515,21 @@ public class FileDownloadUtils {
 
     public static boolean isNetworkNotOnWifiType() {
         final ConnectivityManager manager = (ConnectivityManager) FileDownloadHelper.getAppContext()
-                .
-                        getSystemService(Context.CONNECTIVITY_SERVICE);
+                .getSystemService(Context.CONNECTIVITY_SERVICE);
 
         if (manager == null) {
             FileDownloadLog.w(FileDownloadUtils.class, "failed to get connectivity manager!");
             return true;
         }
 
-        //noinspection MissingPermission, because we check permission accessable when invoked
-        final NetworkInfo info = manager.getActiveNetworkInfo();
+        //noinspection MissingPermission, because we check permission accessible when invoked
+        final Network activeNetwork = manager.getActiveNetwork();
+        if (activeNetwork == null) {
+            return true;
+        }
 
-        return info == null || info.getType() != ConnectivityManager.TYPE_WIFI;
+        final NetworkCapabilities capabilities = manager.getNetworkCapabilities(activeNetwork);
+        return capabilities == null || !capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI);
     }
 
     public static boolean checkPermission(String permission) {
@@ -842,32 +845,13 @@ public class FileDownloadUtils {
     }
 
     private static boolean isAppOnForeground(Context context) {
-        ActivityManager activityManager = (ActivityManager) context.getApplicationContext()
-                .getSystemService(Context.ACTIVITY_SERVICE);
-        if (activityManager == null) return false;
+        final ActivityManager.RunningAppProcessInfo processInfo =
+                new ActivityManager.RunningAppProcessInfo();
+        ActivityManager.getMyMemoryState(processInfo);
 
-        List<ActivityManager.RunningAppProcessInfo> appProcesses =
-                activityManager.getRunningAppProcesses();
-        if (appProcesses == null) return false;
-
-        PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
-        if (pm == null) return false;
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT) {
-            if (!pm.isInteractive()) return false;
-        } else {
-            if (!pm.isScreenOn()) return false;
-        }
-
-        String packageName = context.getApplicationContext().getPackageName();
-        for (ActivityManager.RunningAppProcessInfo appProcess : appProcesses) {
-            // The name of the process that this object is associated with.
-            if (appProcess.processName.equals(packageName) && appProcess.importance
-                    == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND) {
-                return true;
-            }
-
-        }
-        return false;
+        final int importance = processInfo.importance;
+        return importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND
+                || importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_VISIBLE;
     }
 
     public static boolean needMakeServiceForeground(Context context) {

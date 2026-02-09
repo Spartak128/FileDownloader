@@ -16,7 +16,7 @@
 
 package com.liulishuo.filedownloader.services;
 
-import static android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_SHORT_SERVICE;
+import static android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC;
 
 import android.annotation.SuppressLint;
 import android.app.NotificationChannel;
@@ -109,7 +109,7 @@ public class FileDownloadService extends Service {
                     this,
                     config.getNotificationId(),
                     config.getNotification(this),
-                    FOREGROUND_SERVICE_TYPE_SHORT_SERVICE
+                    FOREGROUND_SERVICE_TYPE_DATA_SYNC
             );
             if (FileDownloadLog.NEED_LOG) {
                 FileDownloadLog.d(this, "run service foreground with config: %s", config);
