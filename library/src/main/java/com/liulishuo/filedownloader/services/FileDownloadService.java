@@ -16,18 +16,10 @@
 
 package com.liulishuo.filedownloader.services;
 
-import static android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC;
-
 import android.annotation.SuppressLint;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
-import android.os.Build;
 import android.os.IBinder;
-
-import androidx.core.app.ServiceCompat;
 
 import com.liulishuo.filedownloader.PauseAllMarker;
 import com.liulishuo.filedownloader.download.CustomComponentHolder;
@@ -88,32 +80,14 @@ public class FileDownloadService extends Service {
     }
 
     private void inspectRunServiceForeground(Intent intent) {
-        if (intent == null) return;
-        final boolean isForeground = intent.getBooleanExtra(ExtraKeys.IS_FOREGROUND, false);
-        if (isForeground) {
+        if (intent == null) {
+            return;
+        }
+
+        if (intent.getBooleanExtra(ExtraKeys.IS_FOREGROUND, false) && FileDownloadLog.NEED_LOG) {
             ForegroundServiceConfig config = CustomComponentHolder.getImpl()
                     .getForegroundConfigInstance();
-            if (config.isNeedRecreateChannelId()
-                    && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                NotificationChannel notificationChannel = new NotificationChannel(
-                        config.getNotificationChannelId(),
-                        config.getNotificationChannelName(),
-                        NotificationManager.IMPORTANCE_LOW
-                );
-                NotificationManager notificationManager =
-                        (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-                if (notificationManager == null) return;
-                notificationManager.createNotificationChannel(notificationChannel);
-            }
-            ServiceCompat.startForeground(
-                    this,
-                    config.getNotificationId(),
-                    config.getNotification(this),
-                    FOREGROUND_SERVICE_TYPE_DATA_SYNC
-            );
-            if (FileDownloadLog.NEED_LOG) {
-                FileDownloadLog.d(this, "run service foreground with config: %s", config);
-            }
+            FileDownloadLog.w(this, "foreground mode disabled, ignore config: %s", config);
         }
     }
 

@@ -21,7 +21,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Binder;
-import android.os.Build;
 import android.os.IBinder;
 import android.os.IInterface;
 import android.os.RemoteException;
@@ -161,10 +160,13 @@ public abstract class BaseFileServiceUIGuard<CALLBACK extends Binder, INTERFACE 
         i.putExtra(ExtraKeys.IS_FOREGROUND, runServiceForeground);
         context.bindService(i, this, Context.BIND_AUTO_CREATE);
         if (runServiceForeground) {
-            if (FileDownloadLog.NEED_LOG) FileDownloadLog.d(this, "start foreground service");
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) context.startForegroundService(i);
-        } else {
+            if (FileDownloadLog.NEED_LOG) FileDownloadLog.d(this, "foreground service disabled");
+        }
+
+        if (FileDownloadUtils.canStartService(context)) {
             context.startService(i);
+        } else {
+            FileDownloadLog.w(this, "skip starting service from background due to API constraints");
         }
     }
 

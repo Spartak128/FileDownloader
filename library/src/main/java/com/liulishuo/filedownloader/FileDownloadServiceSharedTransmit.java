@@ -18,7 +18,6 @@ package com.liulishuo.filedownloader;
 import android.app.Notification;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Build;
 
 import com.liulishuo.filedownloader.event.DownloadServiceConnectChangedEvent;
 import com.liulishuo.filedownloader.model.FileDownloadHeader;
@@ -151,10 +150,13 @@ class FileDownloadServiceSharedTransmit implements
         runServiceForeground = FileDownloadUtils.needMakeServiceForeground(context);
         i.putExtra(ExtraKeys.IS_FOREGROUND, runServiceForeground);
         if (runServiceForeground) {
-            if (FileDownloadLog.NEED_LOG) FileDownloadLog.d(this, "start foreground service");
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) context.startForegroundService(i);
-        } else  {
+            if (FileDownloadLog.NEED_LOG) FileDownloadLog.d(this, "foreground service disabled");
+        }
+
+        if (FileDownloadUtils.canStartService(context)) {
             context.startService(i);
+        } else {
+            FileDownloadLog.w(this, "skip starting service from background due to API constraints");
         }
     }
 
